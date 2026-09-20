@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Sorteo de Proyectos 2026</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #090909;
+      --card: #111111;
+      --card-2: #171717;
+      --border: #2a2a2a;
+      --text: #f4f4f4;
+      --muted: #999;
+      --yellow: #ffd400;
+      --green: #43d17c;
+      --red: #ff5c5c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 70px;
+    }
+
+    header {
+      margin-bottom: 35px;
+    }
+
+    .eyebrow {
+      color: var(--yellow);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 14px;
+      max-width: 700px;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      color: white;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--yellow);
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .draw-button {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 17px;
+      background: var(--yellow);
+      color: #000;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .draw-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .draw-button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 10px;
+      background: #151515;
+      color: var(--muted);
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.error {
+      color: var(--red);
+    }
+
+    .status.success {
+      color: var(--green);
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      border: 1px solid var(--yellow);
+      border-radius: 14px;
+      padding: 20px;
+      background: #151300;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result-title {
+      color: var(--yellow);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+    }
+
+    .result-project {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .draw-results {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .draw-result {
+      background: #0d0d0d;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .draw-result span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .draw-result strong {
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .counter {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .counter strong {
+      font-size: 26px;
+    }
+
+    .counter span {
+      color: var(--muted);
+    }
+
+    .progress {
+      height: 7px;
+      background: #222;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--yellow);
+      transition: width .3s ease;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 14px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #1b1b1b;
+      color: var(--muted);
+    }
+
+    .badge.done {
+      color: var(--green);
+      background: #102117;
+    }
+
+    .available {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .availability h3 {
+      margin-top: 0;
+      font-size: 15px;
+    }
+
+    .slots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .slot {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #191919;
+      color: #bbb;
+      font-size: 12px;
+    }
+
+    .slot.used {
+      text-decoration: line-through;
+      opacity: .35;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .secondary-button {
+      border: 1px solid var(--border);
+      background: #151515;
+      color: white;
+      border-radius: 10px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .secondary-button:hover {
+      border-color: var(--yellow);
+    }
+
+    .complete {
+      display: none;
+      text-align: center;
+      border: 1px solid var(--green);
+      color: var(--green);
+      padding: 18px;
+      border-radius: 12px;
+      margin-top: 20px;
+      font-weight: 800;
+    }
+
+    .complete.show {
+      display: block;
+    }
+
+    footer {
+      color: #555;
+      text-align: center;
+      font-size: 12px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 700px) {
+
+      .container {
+        width: min(100% - 20px, 1100px);
+        padding-top: 25px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 14px;
+      }
+
+      .draw-results,
+      .available {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="eyebrow">SORTEO COLABORATIVO · 2026</div>
+    <h1>Asignación de proyectos</h1>
+    <p class="subtitle">
+      Cada proyecto participa una sola vez. El sistema realizará
+      automáticamente un sorteo de una fecha y horario del primer bloque
+      y un horario del segundo bloque.
+    </p>
+  </header>
+
+
+  <!-- SORTEO -->
+  <section class="card">
+
+    <h2>Realizar sorteo</h2>
+
+    <div class="field">
+      <label for="operator">
+        Nombre de quien realiza el sorteo
+      </label>
+
+      <input
+        id="operator"
+        type="text"
+        maxlength="100"
+        placeholder="Ej. Christian Mendez"
+      >
+    </div>
+
+
+    <div class="field">
+      <label for="project">
+        Proyecto
+      </label>
+
+      <select id="project">
+        <option value="">
+          Selecciona el proyecto
+        </option>
+      </select>
+    </div>
+
+
+    <button
+      id="drawButton"
+      class="draw-button"
+      disabled
+    >
+      REALIZAR SORTEO
+    </button>
+
+
+    <div id="status" class="status"></div>
+
+
+    <div id="myResult" class="result">
+
+      <div class="result-title">
+        SORTEO REALIZADO
+      </div>
+
+      <div
+        id="myProject"
+        class="result-project"
+      ></div>
+
+
+      <div class="draw-results">
+
+        <div class="draw-result">
+
+          <span>Bloque 1</span>
+
+          <strong id="myBlock1"></strong>
+
+        </div>
+
+
+        <div class="draw-result">
+
+          <span>Bloque 2 · 7 diciembre</span>
+
+          <strong id="myBlock2"></strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ESTADO -->
+  <section class="card">
+
+    <div class="counter">
+
+      <div>
+        <span>Proyectos sorteados</span>
+        <strong id="counter">0 / 7</strong>
+      </div>
+
+      <div>
+        <span id="liveStatus">
+          Conectando...
+        </span>
+      </div>
+
+    </div>
+
+
+    <div class="progress">
+      <div
+        id="progressBar"
+        class="progress-bar"
+      ></div>
+    </div>
+
+
+    <div class="complete" id="completeMessage">
+      SORTEO COMPLETADO · LOS 7 PROYECTOS YA TIENEN ASIGNACIÓN
+    </div>
+
+  </section>
+
+
+  <!-- RESULTADOS -->
+  <section class="card">
+
+    <h2>Resultados en tiempo real</h2>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>#</th>
+
+            <th>Proyecto</th>
+
+            <th>Bloque 1</th>
+
+            <th>Bloque 2</th>
+
+            <th>Realizó</th>
+
+            <th>Estado</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="resultsBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+
+  <!-- DISPONIBILIDAD -->
+  <section class="card">
+
+    <h2>Disponibilidad</h2>
+
+    <div class="available">
+
+      <div class="availability">
+
+        <h3>Bloque 1 · Fecha + horario</h3>
+
+        <div
+          id="availableBlock1"
+          class="slots"
+        ></div>
+
+      </div>
+
+
+      <div class="availability">
+
+        <h3>Bloque 2 · 7 de diciembre</h3>
+
+        <div
+          id="availableBlock2"
+          class="slots"
+        ></div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- EXPORTAR -->
+  <section class="card">
+
+    <h2>Exportar resultados</h2>
+
+    <p class="subtitle">
+      Descarga el estado actual del sorteo para conservarlo
+      o compartirlo.
+    </p>
+
+    <div class="actions">
+
+      <button
+        id="csvButton"
+        class="secondary-button"
+      >
+        Descargar CSV
+      </button>
+
+      <button
+        id="excelButton"
+        class="secondary-button"
+      >
+        Descargar Excel
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <footer>
+    Sorteo colaborativo · Firebase + Firestore
+  </footer>
+
+</div>
+
+
+<script type="module">
+
+  import {
+    initializeApp
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+
+  import {
+    getAuth,
+    signInAnonymously,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+
+  import {
+    getFirestore,
+    collection,
+    doc,
+    onSnapshot,
+    runTransaction,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+
+  /*
+   ============================================================
+   FIREBASE CONFIG
+   REEMPLAZA ESTOS VALORES POR LOS DE TU PROYECTO
+   ============================================================
+  */
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyCtszMoLAYCr8nCUvbaZULE9fHdd0SWH5Q",
+    authDomain: "sorteo-pef.firebaseapp.com",
+    projectId: "sorteo-pef",
+    storageBucket: "sorteo-pef.firebasestorage.app",
+    messagingSenderId: "229121708054",
+    appId: "1:229121708054:web:b97c02aacccfb2302ca537"
+
+  };
+
+
+  const app = initializeApp(firebaseConfig);
+
+  const auth = getAuth(app);
+
+  const db = getFirestore(app);
+
+
+  /*
+   ============================================================
+   EVENTO
+   ============================================================
+  */
+
+  const EVENT_ID = "sorteo-proyectos-2026";
+
+
+  /*
+   ============================================================
+   PROYECTOS
+   ============================================================
+  */
+
+  const PROJECTS = [
+
+    {
+      id: "itinerante",
+      name: "Itinerante",
+      description:
+        "Cinematic - Videojuegos (Animación 3D y environment)"
+    },
+
+    {
+      id: "en-cinco-anos",
+      name: "En cinco años",
+      description:
+        "Cineminuto 3D/2D"
+    },
+
+    {
+      id: "hey-banco",
+      name: "Hey Banco Advertisement",
+      description:
+        "3D animation"
+    },
+
+    {
+      id: "plaga",
+      name: "PLAGA",
+      description:
+        "Proof of Concept"
+    },
+
+    {
+      id: "sacramentum",
+      name: "Sacramentum",
+      description:
+        "Teaser / Animación 3D"
+    },
+
+    {
+      id: "sirenas-atropelladas",
+      name: "Sirenas Atropelladas",
+      description:
+        "Music Video"
+    },
+
+    {
+      id: "historical-3d",
+      name: "Historical 3D Cinematic Sequence",
+      description:
+        "Cinematic Sequence"
+    }
+
+  ];
+
+
+  /*
+   ============================================================
+   BLOQUE 1
+   ============================================================
+  */
+
+  const BLOCK1 = [
+
+    {
+      id: "b1-01",
+      label: "Viernes 27/11/2026 · 18:00"
+    },
+
+    {
+      id: "b1-02",
+      label: "Lunes 30/11/2026 · 13:00"
+    },
+
+    {
+      id: "b1-03",
+      label: "Lunes 30/11/2026 · 15:30"
+    },
+
+    {
+      id: "b1-04",
+      label: "Lunes 30/11/2026 · 18:00"
+    },
+
+    {
+      id: "b1-05",
+      label: "Martes 01/12/2026 · 18:00"
+    },
+
+    {
+      id: "b1-06",
+      label: "Miércoles 02/12/2026 · 18:00"
+    },
+
+    {
+      id: "b1-07",
+      label: "Jueves 03/12/2026 · 18:00"
+    }
+
+  ];
+
+
+  /*
+   ============================================================
+   BLOQUE 2
+   ============================================================
+  */
+
+  const BLOCK2 = [
+
+    {
+      id: "b2-01",
+      label: "07/12/2026 · 10:00"
+    },
+
+    {
+      id: "b2-02",
+      label: "07/12/2026 · 10:20"
+    },
+
+    {
+      id: "b2-03",
+      label: "07/12/2026 · 10:40"
+    },
+
+    {
+      id: "b2-04",
+      label: "07/12/2026 · 11:20"
+    },
+
+    {
+      id: "b2-05",
+      label: "07/12/2026 · 11:40"
+    },
+
+    {
+      id: "b2-06",
+      label: "07/12/2026 · 12:00"
+    },
+
+    {
+      id: "b2-07",
+      label: "07/12/2026 · 12:40"
+    }
+
+  ];
+
+
+  /*
+   ============================================================
+   ELEMENTOS
+   ============================================================
+  */
+
+  const operatorInput =
+    document.getElementById("operator");
+
+  const projectSelect =
+    document.getElementById("project");
+
+  const drawButton =
+    document.getElementById("drawButton");
+
+  const status =
+    document.getElementById("status");
+
+  const myResult =
+    document.getElementById("myResult");
+
+  const myProject =
+    document.getElementById("myProject");
+
+  const myBlock1 =
+    document.getElementById("myBlock1");
+
+  const myBlock2 =
+    document.getElementById("myBlock2");
+
+  const resultsBody =
+    document.getElementById("resultsBody");
+
+  const counter =
+    document.getElementById("counter");
+
+  const progressBar =
+    document.getElementById("progressBar");
+
+  const completeMessage =
+    document.getElementById("completeMessage");
+
+  const liveStatus =
+    document.getElementById("liveStatus");
+
+  const availableBlock1 =
+    document.getElementById("availableBlock1");
+
+  const availableBlock2 =
+    document.getElementById("availableBlock2");
+
+
+  let currentUser = null;
+
+  let assignments = new Map();
+
+
+  /*
+   ============================================================
+   CARGAR PROYECTOS EN SELECT
+   ============================================================
+  */
+
+  PROJECTS.forEach(project => {
+
+    const option =
+      document.createElement("option");
+
+    option.value = project.id;
+
+    option.textContent =
+      `${project.name} — ${project.description}`;
+
+    projectSelect.appendChild(option);
+
+  });
+
+
+  /*
+   ============================================================
+   UTILIDADES
+   ============================================================
+  */
+
+  function showStatus(message, type = "") {
+
+    status.textContent = message;
+
+    status.className =
+      `status show ${type}`;
+
+  }
+
+
+  function clearStatus() {
+
+    status.textContent = "";
+
+    status.className = "status";
+
+  }
+
+
+  function getProject(projectId) {
+
+    return PROJECTS.find(
+      project => project.id === projectId
+    );
+
+  }
+
+
+  /*
+   ============================================================
+   RANDOM SEED
+   ============================================================
+  */
+
+  function generateSeed() {
+
+    const array =
+      new Uint32Array(4);
+
+    crypto.getRandomValues(array);
+
+    return Array.from(array)
+      .map(number =>
+        number.toString(16).padStart(8, "0")
+      )
+      .join("");
+
+  }
+
+
+  /*
+   ============================================================
+   PRNG DETERMINÍSTICO
+   ============================================================
+  */
+
+  function createRandom(seed) {
+
+    let value =
+      parseInt(seed.slice(0, 8), 16);
+
+    if (!value) {
+      value = 123456789;
+    }
+
+    return function() {
+
+      value ^= value << 13;
+
+      value ^= value >>> 17;
+
+      value ^= value << 5;
+
+      return (
+        (value >>> 0) /
+        4294967296
+      );
+
+    };
+
+  }
+
+
+  function shuffle(array, random) {
+
+    const result =
+      [...array];
+
+    for (
+      let i = result.length - 1;
+      i > 0;
+      i--
+    ) {
+
+      const j =
+        Math.floor(
+          random() * (i + 1)
+        );
+
+      [
+        result[i],
+        result[j]
+      ] =
+      [
+        result[j],
+        result[i]
+      ];
+
+    }
+
+    return result;
+
+  }
+
+
+  /*
+   ============================================================
+   AUTHENTICATION
+   ============================================================
+  */
+
+  signInAnonymously(auth)
+    .catch(error => {
+
+      console.error(error);
+
+      showStatus(
+        "No fue posible iniciar la sesión de Firebase.",
+        "error"
+      );
+
+    });
+
+
+  onAuthStateChanged(
+    auth,
+    user => {
+
+      if (!user) return;
+
+      currentUser = user;
+
+      liveStatus.textContent =
+        "Conectado en tiempo real";
+
+      drawButton.disabled = false;
+
+      listenToAssignments();
+
+    }
+  );
+
+
+  /*
+   ============================================================
+   FIRESTORE LISTENER
+   ============================================================
+  */
+
+  function listenToAssignments() {
+
+    const projectsRef =
+      collection(
+        db,
+        "events",
+        EVENT_ID,
+        "projects"
+      );
+
+
+    onSnapshot(
+
+      projectsRef,
+
+      snapshot => {
+
+        assignments =
+          new Map();
+
+
+        snapshot.forEach(docSnapshot => {
+
+          assignments.set(
+            docSnapshot.id,
+            {
+              id: docSnapshot.id,
+              ...docSnapshot.data()
+            }
+          );
+
+        });
+
+
+        renderAll();
+
+      },
+
+      error => {
+
+        console.error(error);
+
+        liveStatus.textContent =
+          "Error de conexión";
+
+        showStatus(
+          "No fue posible leer los resultados.",
+          "error"
+        );
+
+      }
+
+    );
+
+  }
+
+
+  /*
+   ============================================================
+   RENDER
+   ============================================================
+  */
+
+  function renderAll() {
+
+    renderProjectSelector();
+
+    renderResults();
+
+    renderAvailability();
+
+    renderCounter();
+
+    renderMyResult();
+
+  }
+
+
+  function renderProjectSelector() {
+
+    const selected =
+      projectSelect.value;
+
+
+    projectSelect.innerHTML =
+      `<option value="">
+        Selecciona el proyecto
+      </option>`;
+
+
+    PROJECTS.forEach(project => {
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        project.id;
+
+
+      const assignment =
+        assignments.get(project.id);
+
+
+      if (assignment) {
+
+        option.textContent =
+          `${project.name} — SORTEADO`;
+
+        option.disabled = true;
+
+      } else {
+
+        option.textContent =
+          `${project.name} — ${project.description}`;
+
+      }
+
+
+      projectSelect.appendChild(option);
+
+    });
+
+
+    if (
+      selected &&
+      !assignments.has(selected)
+    ) {
+
+      projectSelect.value =
+        selected;
+
+    }
+
+  }
+
+
+  function renderResults() {
+
+    resultsBody.innerHTML = "";
+
+
+    PROJECTS.forEach(
+      (project, index) => {
+
+        const assignment =
+          assignments.get(project.id);
+
+
+        const row =
+          document.createElement("tr");
+
+
+        if (!assignment) {
+
+          row.innerHTML = `
+
+            <td>${index + 1}</td>
+
+            <td>
+              <strong>${project.name}</strong><br>
+              <small style="color:#777">
+                ${project.description}
+              </small>
+            </td>
+
+            <td>—</td>
+
+            <td>—</td>
+
+            <td>—</td>
+
+            <td>
+              <span class="badge">
+                Pendiente
+              </span>
+            </td>
+
+          `;
+
+        } else {
+
+          const block1 =
+            BLOCK1.find(
+              slot =>
+                slot.id === assignment.block1
+            );
+
+          const block2 =
+            BLOCK2.find(
+              slot =>
+                slot.id === assignment.block2
+            );
+
+
+          row.innerHTML = `
+
+            <td>${index + 1}</td>
+
+            <td>
+              <strong>${project.name}</strong><br>
+              <small style="color:#777">
+                ${project.description}
+              </small>
+            </td>
+
+            <td>
+              ${block1?.label || "—"}
+            </td>
+
+            <td>
+              ${block2?.label || "—"}
+            </td>
+
+            <td>
+              ${escapeHtml(
+                assignment.operator || "—"
+              )}
+            </td>
+
+            <td>
+              <span class="badge done">
+                Sorteado
+              </span>
+            </td>
+
+          `;
+
+        }
+
+
+        resultsBody.appendChild(row);
+
+      }
+    );
+
+  }
+
+
+  function renderAvailability() {
+
+    const used1 =
+      new Set(
+        Array.from(assignments.values())
+          .map(item => item.block1)
+      );
+
+
+    const used2 =
+      new Set(
+        Array.from(assignments.values())
+          .map(item => item.block2)
+      );
+
+
+    availableBlock1.innerHTML = "";
+
+    availableBlock2.innerHTML = "";
+
+
+    BLOCK1.forEach(slot => {
+
+      const element =
+        document.createElement("div");
+
+      element.className =
+        `slot ${used1.has(slot.id) ? "used" : ""}`;
+
+      element.textContent =
+        slot.label;
+
+      availableBlock1.appendChild(element);
+
+    });
+
+
+    BLOCK2.forEach(slot => {
+
+      const element =
+        document.createElement("div");
+
+      element.className =
+        `slot ${used2.has(slot.id) ? "used" : ""}`;
+
+      element.textContent =
+        slot.label;
+
+      availableBlock2.appendChild(element);
+
+    });
+
+  }
+
+
+  function renderCounter() {
+
+    const count =
+      assignments.size;
+
+    const percentage =
+      (count / PROJECTS.length) * 100;
+
+
+    counter.textContent =
+      `${count} / ${PROJECTS.length}`;
+
+
+    progressBar.style.width =
+      `${percentage}%`;
+
+
+    completeMessage.classList.toggle(
+      "show",
+      count === PROJECTS.length
+    );
+
+  }
+
+
+  function renderMyResult() {
+
+    if (!currentUser) return;
+
+
+    const mine =
+      Array.from(assignments.values())
+        .find(
+          item =>
+            item.uid === currentUser.uid
+        );
+
+
+    if (!mine) {
+
+      myResult.classList.remove("show");
+
+      return;
+
+    }
+
+
+    const project =
+      getProject(mine.projectId);
+
+
+    const block1 =
+      BLOCK1.find(
+        slot =>
+          slot.id === mine.block1
+      );
+
+
+    const block2 =
+      BLOCK2.find(
+        slot =>
+          slot.id === mine.block2
+      );
+
+
+    myProject.textContent =
+      project?.name || mine.projectId;
+
+
+    myBlock1.textContent =
+      block1?.label || mine.block1;
+
+
+    myBlock2.textContent =
+      block2?.label || mine.block2;
+
+
+    myResult.classList.add("show");
+
+
+    projectSelect.value =
+      "";
+
+    projectSelect.disabled =
+      true;
+
+    operatorInput.disabled =
+      true;
+
+    drawButton.disabled =
+      true;
+
+  }
+
+
+  /*
+   ============================================================
+   REALIZAR SORTEO
+   ============================================================
+  */
+
+  drawButton.addEventListener(
+    "click",
+    async () => {
+
+      clearStatus();
+
+
+      if (!currentUser) {
+
+        showStatus(
+          "Esperando conexión con Firebase...",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      const operator =
+        operatorInput.value.trim();
+
+
+      const projectId =
+        projectSelect.value;
+
+
+      if (!operator) {
+
+        showStatus(
+          "Escribe el nombre de quien realiza el sorteo.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (!projectId) {
+
+        showStatus(
+          "Selecciona un proyecto.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      if (assignments.has(projectId)) {
+
+        showStatus(
+          "Ese proyecto ya fue sorteado.",
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      drawButton.disabled =
+        true;
+
+
+      drawButton.textContent =
+        "SORTEANDO...";
+
+
+      try {
+
+        const project =
+          getProject(projectId);
+
+
+        const seed =
+          generateSeed();
+
+
+        const random =
+          createRandom(seed);
+
+
+        const projectRef =
+          doc(
+            db,
+            "events",
+            EVENT_ID,
+            "projects",
+            projectId
+          );
+
+
+        const block1Refs =
+          BLOCK1.map(slot =>
+            doc(
+              db,
+              "events",
+              EVENT_ID,
+              "block1Slots",
+              slot.id
+            )
+          );
+
+
+        const block2Refs =
+          BLOCK2.map(slot =>
+            doc(
+              db,
+              "events",
+              EVENT_ID,
+              "block2Slots",
+              slot.id
+            )
+          );
+
+
+        await runTransaction(
+          db,
+          async transaction => {
+
+            const projectSnapshot =
+              await transaction.get(
+                projectRef
+              );
+
+
+            if (projectSnapshot.exists()) {
+
+              throw new Error(
+                "PROJECT_ALREADY_DRAWN"
+              );
+
+            }
+
+
+            const block1Snapshots =
+              [];
+
+            for (
+              const ref of block1Refs
+            ) {
+
+              block1Snapshots.push(
+                await transaction.get(ref)
+              );
+
+            }
+
+
+            const block2Snapshots =
+              [];
+
+            for (
+              const ref of block2Refs
+            ) {
+
+              block2Snapshots.push(
+                await transaction.get(ref)
+              );
+
+            }
+
+
+            const freeBlock1 =
+              BLOCK1.filter(
+                (_, index) =>
+                  !block1Snapshots[index].exists()
+              );
+
+
+            const freeBlock2 =
+              BLOCK2.filter(
+                (_, index) =>
+                  !block2Snapshots[index].exists()
+              );
+
+
+            if (
+              freeBlock1.length === 0 ||
+              freeBlock2.length === 0
+            ) {
+
+              throw new Error(
+                "NO_SLOTS_AVAILABLE"
+              );
+
+            }
+
+
+            const shuffledBlock1 =
+              shuffle(
+                freeBlock1,
+                random
+              );
+
+
+            const shuffledBlock2 =
+              shuffle(
+                freeBlock2,
+                random
+              );
+
+
+            const selectedBlock1 =
+              shuffledBlock1[0];
+
+
+            const selectedBlock2 =
+              shuffledBlock2[0];
+
+
+            const selectedBlock1Ref =
+              doc(
+                db,
+                "events",
+                EVENT_ID,
+                "block1Slots",
+                selectedBlock1.id
+              );
+
+
+            const selectedBlock2Ref =
+              doc(
+                db,
+                "events",
+                EVENT_ID,
+                "block2Slots",
+                selectedBlock2.id
+              );
+
+
+            const assignment = {
+
+              projectId,
+
+              name:
+                project.name,
+
+              operator,
+
+              uid:
+                currentUser.uid,
+
+              block1:
+                selectedBlock1.id,
+
+              block2:
+                selectedBlock2.id,
+
+              seed,
+
+              createdAt:
+                serverTimestamp()
+
+            };
+
+
+            transaction.set(
+              projectRef,
+              assignment
+            );
+
+
+            transaction.set(
+              selectedBlock1Ref,
+              {
+
+                slotId:
+                  selectedBlock1.id,
+
+                projectId,
+
+                projectName:
+                  project.name,
+
+                uid:
+                  currentUser.uid,
+
+                createdAt:
+                  serverTimestamp()
+
+              }
+            );
+
+
+            transaction.set(
+              selectedBlock2Ref,
+              {
+
+                slotId:
+                  selectedBlock2.id,
+
+                projectId,
+
+                projectName:
+                  project.name,
+
+                uid:
+                  currentUser.uid,
+
+                createdAt:
+                  serverTimestamp()
+
+              }
+            );
+
+          }
+        );
+
+
+        showStatus(
+          "Sorteo realizado y guardado correctamente.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        console.error(error);
+
+
+        if (
+          error.message ===
+          "PROJECT_ALREADY_DRAWN"
+        ) {
+
+          showStatus(
+            "Este proyecto ya fue sorteado por otra persona.",
+            "error"
+          );
+
+        } else if (
+          error.message ===
+          "NO_SLOTS_AVAILABLE"
+        ) {
+
+          showStatus(
+            "Ya no hay horarios disponibles.",
+            "error"
+          );
+
+        } else {
+
+          showStatus(
+            "No fue posible realizar el sorteo. Revisa la conexión con Firebase.",
+            "error"
+          );
+
+        }
+
+      } finally {
+
+        drawButton.textContent =
+          "REALIZAR SORTEO";
+
+
+        if (
+          !Array.from(assignments.values())
+            .some(
+              item =>
+                item.uid === currentUser?.uid
+            )
+        ) {
+
+          drawButton.disabled =
+            false;
+
+        }
+
+      }
+
+    }
+  );
+
+
+  /*
+   ============================================================
+   EXPORTAR CSV
+   ============================================================
+  */
+
+  document
+    .getElementById("csvButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        const rows = [
+
+          [
+            "Proyecto",
+            "Descripción",
+            "Bloque 1",
+            "Bloque 2",
+            "Realizó",
+            "Semilla"
+          ]
+
+        ];
+
+
+        PROJECTS.forEach(project => {
+
+          const assignment =
+            assignments.get(project.id);
+
+
+          if (!assignment) {
+
+            rows.push([
+              project.name,
+              project.description,
+              "",
+              "",
+              "",
+              ""
+            ]);
+
+            return;
+
+          }
+
+
+          const block1 =
+            BLOCK1.find(
+              slot =>
+                slot.id === assignment.block1
+            );
+
+
+          const block2 =
+            BLOCK2.find(
+              slot =>
+                slot.id === assignment.block2
+            );
+
+
+          rows.push([
+
+            project.name,
+
+            project.description,
+
+            block1?.label || "",
+
+            block2?.label || "",
+
+            assignment.operator || "",
+
+            assignment.seed || ""
+
+          ]);
+
+        });
+
+
+        const csv =
+          rows
+            .map(row =>
+              row
+                .map(value =>
+                  `"${String(value)
+                    .replaceAll('"', '""')}"`
+                )
+                .join(",")
+            )
+            .join("\n");
+
+
+        const blob =
+          new Blob(
+            ["\ufeff" + csv],
+            {
+              type:
+                "text/csv;charset=utf-8;"
+            }
+          );
+
+
+        const url =
+          URL.createObjectURL(blob);
+
+
+        const link =
+          document.createElement("a");
+
+
+        link.href =
+          url;
+
+        link.download =
+          "sorteo-proyectos-2026.csv";
+
+
+        link.click();
+
+
+        URL.revokeObjectURL(url);
+
+      }
+    );
+
+
+  /*
+   ============================================================
+   EXPORTAR EXCEL
+   ============================================================
+  */
+
+  document
+    .getElementById("excelButton")
+    .addEventListener(
+      "click",
+      () => {
+
+        const rows = [];
+
+
+        rows.push([
+
+          "Proyecto",
+          "Descripción",
+          "Bloque 1",
+          "Bloque 2",
+          "Realizó",
+          "Semilla"
+
+        ]);
+
+
+        PROJECTS.forEach(project => {
+
+          const assignment =
+            assignments.get(project.id);
+
+
+          const block1 =
+            assignment
+              ? BLOCK1.find(
+                  slot =>
+                    slot.id === assignment.block1
+                )?.label || ""
+              : "";
+
+
+          const block2 =
+            assignment
+              ? BLOCK2.find(
+                  slot =>
+                    slot.id === assignment.block2
+                )?.label || ""
+              : "";
+
+
+          rows.push([
+
+            project.name,
+
+            project.description,
+
+            block1,
+
+            block2,
+
+            assignment?.operator || "",
+
+            assignment?.seed || ""
+
+          ]);
+
+        });
+
+
+        const workbook =
+          XLSX.utils.book_new();
+
+
+        const worksheet =
+          XLSX.utils.aoa_to_sheet(rows);
+
+
+        XLSX.utils.book_append_sheet(
+          workbook,
+          worksheet,
+          "Resultados"
+        );
+
+
+        XLSX.writeFile(
+          workbook,
+          "sorteo-proyectos-2026.xlsx"
+        );
+
+      }
+    );
+
+
+  /*
+   ============================================================
+   ESCAPAR HTML
+   ============================================================
+  */
+
+  function escapeHtml(value) {
+
+    return String(value)
+
+      .replaceAll("&", "&amp;")
+
+      .replaceAll("<", "&lt;")
+
+      .replaceAll(">", "&gt;")
+
+      .replaceAll('"', "&quot;")
+
+      .replaceAll("'", "&#039;");
+
+  }
+
+</script>
+
+</body>
+</html>
